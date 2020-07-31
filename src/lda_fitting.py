@@ -1,5 +1,7 @@
 import datetime
 import itertools
+import matplotlib.pyplot as plt
+import numpy as np
 import operator
 import pandas as pd
 import time
@@ -81,6 +83,7 @@ class LDATopicFinder:
                  max_n_topics = 20,
                  max_iter = 5,
                  min_n_topics = 2,
+                 print_kfold_plot = True,
                  random_state = 7302020):
         self.tfid_vector = tfid_vector
         self.kfolds = kfolds
@@ -88,6 +91,7 @@ class LDATopicFinder:
         self.max_n_topics = max_n_topics
         self.max_iter = max_iter
         self.min_n_topics = min_n_topics
+        self.print_kfold_plot = print_kfold_plot
         self.random_state = random_state
         
     
@@ -115,7 +119,9 @@ class LDATopicFinder:
         n_topic_range = range(self.min_n_topics, (self.max_n_topics + 1))
         n_iterations = len(n_topic_range)
         fold_tfid_vector = tfid_kfold_split(tfid_vector = self.tfid_vector, k = self.kfolds)
+        n_topic_list = []
         perplexity_list = []
+        uncertainty_list = []
         kfold_list = []
         
         # Loop Over K-Folds & No. Topics
@@ -130,13 +136,48 @@ class LDATopicFinder:
                                                     max_iter = self.max_iter,
                                                     learning_method = self.learning_method,
                                                     random_state = self.random_state).fit(train_tfid_vector)
+                # Score for Uncertainty Calculation
+                scores = fit_lda.transform(fold_tfid_vector[k])
+                topic_probs = scores.max(axis = 1)
+                
+                # Score and Append Results
+                n_topic_list.append(i)
                 perplexity_list.append(fit_lda.perplexity(fold_tfid_vector[k]))
+                uncertainty_list.append(np.mean(1 - topic_probs))
                 kfold_list.append(k)
                 i_counter += 1
-        output_df = pd.DataFrame({'n_topics' : list(n_topic_range),
-                                  'perplexity' : perplexity_list,
-                                  'k_fold' : kfold_list})
-        return output_df
+        output_df = pd.DataFrame({'n_topics' : n_topic_list,
+                                  'k_fold' : kfold_list,
+                                  'uncertainty' : uncertainty_list,
+                                  'perplexity' : perplexity_list})
+        # Average of Fold Results
+        mean_perplexity_grid_results = output_df[['n_topics', 'perplexity', 'uncertainty']].\
+        groupby(['n_topics'], as_index = False).\
+        agg({'perplexity' : 'mean',
+             'uncertainty' : 'mean'})
+        
+        # Print Plot
+        if self.print_kfold_plot:
+            #plt.plot(mean_perplexity_grid_results['n_topics'], mean_perplexity_grid_results['perplexity'], marker = 'o')
+            #plt.xlabel('No. Topics')
+            #plt.ylabel('Mean Perplexity')
+            #plt.title(f'Mean Out of Sample Perplexity Over {self.kfolds} Folds')
+            #plt.show()
+            fig, axs = plt.subplots(2, 1, constrained_layout=True)
+            fig.suptitle(f'Mean Out of Sample {self.kfolds}-Fold Results', fontsize=16)
+            axs[0].plot(mean_perplexity_grid_results['n_topics'], mean_perplexity_grid_results['perplexity'], '--',
+                        mean_perplexity_grid_results['n_topics'], mean_perplexity_grid_results['perplexity'], 'o')
+            axs[0].set_title(f'Perplexity')
+            axs[0].set_xlabel('No. Topics')
+            axs[0].set_ylabel('Mean Perplexity')
+            
+            axs[1].plot(mean_perplexity_grid_results['n_topics'], mean_perplexity_grid_results['uncertainty'], '--',
+                        mean_perplexity_grid_results['n_topics'], mean_perplexity_grid_results['uncertainty'], 'o')
+            axs[1].set_title(f'Uncertainty (1 - highest topic probability)')
+            axs[1].set_xlabel('No. Topics')
+            axs[1].set_ylabel('Mean Uncertainty')
+            
+        return mean_perplexity_grid_results
     
 
 
