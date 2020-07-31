@@ -95,7 +95,6 @@ class LDATopicFinder:
         self.random_state = random_state
         
     
-        
     def run_perplexity_grid_search(self):
         i_counter = 1
         n_topic_range = range(self.min_n_topics, (self.max_n_topics + 1))
@@ -153,16 +152,10 @@ class LDATopicFinder:
         # Average of Fold Results
         mean_perplexity_grid_results = output_df[['n_topics', 'perplexity', 'uncertainty']].\
         groupby(['n_topics'], as_index = False).\
-        agg({'perplexity' : 'mean',
-             'uncertainty' : 'mean'})
+        agg({'perplexity' : 'mean', 'uncertainty' : 'mean'})
         
         # Print Plot
         if self.print_kfold_plot:
-            #plt.plot(mean_perplexity_grid_results['n_topics'], mean_perplexity_grid_results['perplexity'], marker = 'o')
-            #plt.xlabel('No. Topics')
-            #plt.ylabel('Mean Perplexity')
-            #plt.title(f'Mean Out of Sample Perplexity Over {self.kfolds} Folds')
-            #plt.show()
             fig, axs = plt.subplots(2, 1, constrained_layout=True)
             fig.suptitle(f'Mean Out of Sample {self.kfolds}-Fold Results', fontsize=16)
             axs[0].plot(mean_perplexity_grid_results['n_topics'], mean_perplexity_grid_results['perplexity'], '--',

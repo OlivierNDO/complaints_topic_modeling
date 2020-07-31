@@ -5,17 +5,7 @@ import sys
 sys.path.insert(1, 'D:/complaints_topic_modeling/')
 
 # Python Module Imports
-import csv
-import itertools
-import nltk
-import numpy as np
-import operator
 import pandas as pd
-import scipy
-import sklearn
-from sklearn.decomposition import NMF, LatentDirichletAllocation
-import random
-import re
 
 # Local Module Imports
 import src.configuration as config
@@ -50,7 +40,7 @@ text_vector, feature_names = text_pipeline.get_vectorized_text_and_feature_names
 ### Model Fitting
 ########################################################################################################
 # Perplexity Grid Search
-lda_finder = ldaf.LDATopicFinder(text_vector, min_n_topics = 3, max_n_topics = 6)
+lda_finder = ldaf.LDATopicFinder(text_vector, min_n_topics = 3, max_n_topics = 20, max_iter = 10)
 perplexity_grid_results = lda_finder.run_kfold_perplexity_grid()
 
 
