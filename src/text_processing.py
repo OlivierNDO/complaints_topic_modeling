@@ -113,7 +113,13 @@ class TextProcessingPipeline:
                                                                             ngram_range = self.ngram_range)
         return vectorizer_object.fit_transform(clean_text), vectorizer_object.get_feature_names()
         
-
+    def get_vectorized_text_and_feature_names_train_test(self):
+        clean_text = self.get_cleaned_text()
+        vectorizer_object = sklearn.feature_extraction.text.TfidfVectorizer(max_df = self.max_df,
+                                                                            min_df = self.min_df,
+                                                                            max_features = self.max_features,
+                                                                            ngram_range = self.ngram_range)
+        return vectorizer_object.fit_transform(clean_text), vectorizer_object.get_feature_names()
 
 
 
