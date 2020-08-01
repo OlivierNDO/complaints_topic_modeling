@@ -1,4 +1,6 @@
 import nltk
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import src.configuration as config
 import re

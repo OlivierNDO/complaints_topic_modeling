@@ -10,6 +10,7 @@ import sklearn
 
 # Local Module Imports
 import src.configuration as config
+import src.eda as eda
 import src.text_processing as txt_proc
 import src.lda_fitting as ldaf
 
@@ -42,13 +43,11 @@ text_pipeline = txt_proc.TextProcessingPipeline(string_list = card_complaints_tr
 train_vec, test_vec, feat_names = text_pipeline.get_vectorized_text_and_feature_names_train_test()
 
 
-
 ### Model Fitting
 ########################################################################################################
 # Call TopicFinder Class
 lda_finder = ldaf.LDATopicFinder(tfid_vector = train_vec, tfid_vector_test = test_vec,
                                  min_n_topics = 3, max_n_topics = 20, max_iter = 10)
-
 
 # Perplexity & Uncertainty Grid Search
 perplexity_grid_results = lda_finder.run_kfold_perplexity_grid()
@@ -56,12 +55,17 @@ perplexity_grid_results = lda_finder.run_kfold_perplexity_grid()
 # Fit on Selected Number of Topics
 lda_finder.use_n_topics = 9
 lda_model, scored_train = lda_finder.fit_and_score_train()
+scored_train['clean_text'] = text_pipeline.get_cleaned_train_text()
+
+# Plot Topic Frequency
+eda.plot_frequency_counts(scored_train['predicted_topic'], title = 'Training Set Topic Frequency')
 
 # Look at & Label Topics
 topics = ldaf.show_lda_topics(lda_model, feat_names, n_top_words = 70)
 
 # Label Topics
-topic_labels = []
+topic_labels = ['6. Fraud',
+                '9. Rewards & Promotions']
 
 
 
