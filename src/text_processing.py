@@ -1,10 +1,31 @@
 import nltk
+import pandas as pd
 import src.configuration as config
 import re
 import sklearn
 
+
+
+def count_each_unique(lst):
+    """
+    Count occurences of each unique element of a list
+    Args:
+        lst (list): list or other iterable object
+    Returns:
+        pandas.DataFrame() object with fields 'element', 'count', and 'percent'
+    """
+    unique_values = list(set(lst))
+    uv_counts = [len([l for l in lst if l == uv]) for uv in unique_values]
+    uv_percent_counts = [uvc / sum(uv_counts) for uvc in uv_counts]
+    output_df = pd.DataFrame({'element' : unique_values,
+                              'count' : uv_counts,
+                              'percent' : uv_percent_counts})
+    return output_df
+
+
+
 def remove_stopwords(input_string, word_delimiter = ' ',
-                     use_lowercase = True, stopword_list = config.general_stopwords):
+                     use_lowercase = True, stopword_list = config.all_stopwords):
    """
    Remove stopwords from a string
    Args:
