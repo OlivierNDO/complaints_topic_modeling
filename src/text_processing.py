@@ -32,6 +32,17 @@ def remove_punctuation(input_string, replace_punct_with = ' ', punctuation = '!"
    return punct_regex.sub(replace_punct_with, input_string)
 
 
+def remove_numerics(input_string):
+   """
+   Remove numeric characters  from a string
+   Args:
+       input_string (str): string
+   Returns:
+       str
+   """
+   return ''.join([i for i in input_string if not i.isdigit()])
+
+
 def remove_multiple_substrings(input_string, substring_removals, use_lowercase = True):
     """
     Remove list of substrings from a string
@@ -77,6 +88,7 @@ def wordnet_lemmatize_string(input_string, word_delimiter = ' ', pos = 'n'):
 
 class TextProcessingPipeline:
     def __init__(self, string_list,
+                 test_string_list = None,
                  max_df = 0.7,
                  min_df = 10,
                  max_features = 1000,
@@ -88,6 +100,7 @@ class TextProcessingPipeline:
                  use_lowercase = True,
                  word_delimiter = ' '):
         self.string_list = string_list
+        self.test_string_list = test_string_list
         self.max_df = max_df
         self.min_df = min_df
         self.max_features = max_features
@@ -99,9 +112,17 @@ class TextProcessingPipeline:
         self.use_lowercase = use_lowercase
         self.word_delimiter = word_delimiter
         
-    def get_cleaned_text(self):
+    def get_cleaned_train_text(self):
         sl_rm_punct = [remove_punctuation(s, self.replace_punct_with, self.punctuation) for s in self.string_list]
-        sl_rm_stopwords = [remove_stopwords(s, self.word_delimiter, self.use_lowercase, self.stopword_list) for s in sl_rm_punct]
+        sl_rm_nums = [remove_numerics(s) for s in sl_rm_punct]
+        sl_rm_stopwords = [remove_stopwords(s, self.word_delimiter, self.use_lowercase, self.stopword_list) for s in sl_rm_nums]
+        sl_rm_substrings = [remove_multiple_substrings(s, self.substring_removals, self.use_lowercase) for s in sl_rm_stopwords]
+        return sl_rm_substrings
+    
+    def get_cleaned_test_text(self):
+        sl_rm_punct = [remove_punctuation(s, self.replace_punct_with, self.punctuation) for s in self.test_string_list]
+        sl_rm_nums = [remove_numerics(s) for s in sl_rm_punct]
+        sl_rm_stopwords = [remove_stopwords(s, self.word_delimiter, self.use_lowercase, self.stopword_list) for s in sl_rm_nums]
         sl_rm_substrings = [remove_multiple_substrings(s, self.substring_removals, self.use_lowercase) for s in sl_rm_stopwords]
         return sl_rm_substrings
         
@@ -114,15 +135,18 @@ class TextProcessingPipeline:
         return vectorizer_object.fit_transform(clean_text), vectorizer_object.get_feature_names()
         
     def get_vectorized_text_and_feature_names_train_test(self):
-        clean_text = self.get_cleaned_text()
+        clean_text = self.get_cleaned_train_text()
+        clean_text_test = self.get_cleaned_train_text()
         vectorizer_object = sklearn.feature_extraction.text.TfidfVectorizer(max_df = self.max_df,
                                                                             min_df = self.min_df,
                                                                             max_features = self.max_features,
                                                                             ngram_range = self.ngram_range)
-        return vectorizer_object.fit_transform(clean_text), vectorizer_object.get_feature_names()
-
-
-
+        
+        train_vec = vectorizer_object.fit_transform(clean_text)
+        test_vec = vectorizer_object.fit_transform(clean_text_test)
+        feat_names = vectorizer_object.get_feature_names()
+        
+        return train_vec, test_vec, feat_names
 
 
 

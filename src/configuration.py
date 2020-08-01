@@ -23,8 +23,13 @@ general_stopwords = ["again", "against", "ain", "all", "am", "an", "and", "any",
                      "whom", "why", "will", "with", "won", "won't", "wouldn", "wouldn't", "y", "you",
                      "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"]
 
-custom_stopwords = ['\n']
+custom_stopwords = ['\n', 'bank of america', 'chase', 'wells fargo', 'citi', 'citigroup', 'citibank',
+                    'american express', 'epress', 'wells', 'synchrony', 'discover', 'usaa',
+                    'capital one', 'barclay', 'express', 'american', 'amex', 'paypal', 'bank',
+                    'fargo']
 
-all_stopwords = general_stopwords + custom_stopwords
+year_stopwords = [str(y) for y in range(2000,2050)]
 
-substrings_to_remove = ['\n'] + ['x' * n for n in range(1,25)]
+all_stopwords = general_stopwords + custom_stopwords + year_stopwords
+
+substrings_to_remove = ['\n'] + ['x' * n for n in range(2,25)]

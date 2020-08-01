@@ -54,7 +54,7 @@ def show_lda_topics(lda_model, feature_names, n_top_words):
     for i, topic in enumerate(lda_model.components_):
         sorted_components = topic.argsort()[:-n_top_words - 1:-1]
         top_components = " ".join(["'" + feature_names[i] + "'" for i in sorted_components])
-        str_list.append("Topic %d:" % (i) + top_components)
+        str_list.append("Topic %d:" % (i + 1) + top_components)
     return str_list 
 
 
@@ -78,14 +78,17 @@ def tfid_kfold_split(tfid_vector, k = 10):
 
 class LDATopicFinder:
     def __init__(self, tfid_vector,
+                 tfid_vector_test = None,
                  kfolds = 5,
                  learning_method = 'online',
                  max_n_topics = 20,
                  max_iter = 5,
                  min_n_topics = 2,
                  print_kfold_plot = True,
-                 random_state = 7302020):
+                 random_state = 7302020,
+                 use_n_topics = 6):
         self.tfid_vector = tfid_vector
+        self.tfid_vector_test = tfid_vector_test
         self.kfolds = kfolds
         self.learning_method = learning_method
         self.max_n_topics = max_n_topics
@@ -93,7 +96,7 @@ class LDATopicFinder:
         self.min_n_topics = min_n_topics
         self.print_kfold_plot = print_kfold_plot
         self.random_state = random_state
-        
+        self.use_n_topics = use_n_topics
     
     def run_perplexity_grid_search(self):
         i_counter = 1
@@ -172,6 +175,53 @@ class LDATopicFinder:
             
         return mean_perplexity_grid_results
     
+    
+    def fit_lda(self):
+        lda = LatentDirichletAllocation(n_components = self.use_n_topics,
+                                        max_iter = self.max_iter,
+                                        learning_method = self.learning_method,
+                                        random_state = self.random_state).fit(self.tfid_vector)
+        return lda
+    
+    
+    def fit_and_score_train(self):
+        # Fit Model & Transform Test Set
+        fitted_model = self.fit_lda()
+        train_set_pred = fitted_model.transform(self.tfid_vector)
+        
+        # Assign Labels
+        max_prob_values = np.amax(train_set_pred, axis = 1)
+        max_prob_index = list(np.argmax(train_set_pred, axis = 1))
+            
+        # Return Data.Frame() Object
+        score_df = pd.DataFrame({'predicted_topic' : [i + 1 for i in list(max_prob_index)],
+                                 'predicted_probability' : list(max_prob_values)})
+        
+        return fitted_model, score_df
+    
+    
+    def fit_and_score_test(self):
+        # Fit Model & Transform Test Set
+        fitted_model = self.fit_lda()
+        test_set_pred = fitted_model.transform(self.tfid_vector_test)
+        
+        # Assign Labels
+        max_prob_values = np.amax(test_set_pred, axis = 1)
+        max_prob_index = list(np.argmax(test_set_pred, axis = 1))
+            
+        # Return Data.Frame() Object
+        score_df = pd.DataFrame({'predicted_topic' : [i + 1 for i in list(max_prob_index)],
+                                 'predicted_probability' : list(max_prob_values)})
+        
+        return fitted_model, score_df
+
+        
+
+
+
+
+
+
 
 
 
