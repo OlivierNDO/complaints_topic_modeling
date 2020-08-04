@@ -116,6 +116,7 @@ class TextProcessingPipeline:
                  min_df = 10,
                  max_features = 1000,
                  ngram_range = (1,3),
+                 pos = 'n',
                  punctuation = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~',
                  replace_punct_with = ' ',
                  stopword_list = config.all_stopwords,
@@ -128,6 +129,7 @@ class TextProcessingPipeline:
         self.min_df = min_df
         self.max_features = max_features
         self.ngram_range = ngram_range
+        self.pos = pos
         self.punctuation = punctuation
         self.replace_punct_with = replace_punct_with
         self.stopword_list = stopword_list
@@ -140,14 +142,16 @@ class TextProcessingPipeline:
         sl_rm_nums = [remove_numerics(s) for s in sl_rm_punct]
         sl_rm_stopwords = [remove_stopwords(s, self.word_delimiter, self.use_lowercase, self.stopword_list) for s in sl_rm_nums]
         sl_rm_substrings = [remove_multiple_substrings(s, self.substring_removals, self.use_lowercase) for s in sl_rm_stopwords]
-        return sl_rm_substrings
+        sl_lem_strings = [wordnet_lemmatize_string(s, self.word_delimiter, self.pos) for s in sl_rm_substrings]
+        return sl_lem_strings
     
     def get_cleaned_test_text(self):
         sl_rm_punct = [remove_punctuation(s, self.replace_punct_with, self.punctuation) for s in self.test_string_list]
         sl_rm_nums = [remove_numerics(s) for s in sl_rm_punct]
         sl_rm_stopwords = [remove_stopwords(s, self.word_delimiter, self.use_lowercase, self.stopword_list) for s in sl_rm_nums]
         sl_rm_substrings = [remove_multiple_substrings(s, self.substring_removals, self.use_lowercase) for s in sl_rm_stopwords]
-        return sl_rm_substrings
+        sl_lem_strings = [wordnet_lemmatize_string(s, self.word_delimiter, self.pos) for s in sl_rm_substrings]
+        return sl_lem_strings
         
     def get_vectorized_text_and_feature_names(self):
         clean_text = self.get_cleaned_text()
@@ -159,7 +163,7 @@ class TextProcessingPipeline:
         
     def get_vectorized_text_and_feature_names_train_test(self):
         clean_text = self.get_cleaned_train_text()
-        clean_text_test = self.get_cleaned_train_text()
+        clean_text_test = self.get_cleaned_test_text()
         vectorizer_object = sklearn.feature_extraction.text.TfidfVectorizer(max_df = self.max_df,
                                                                             min_df = self.min_df,
                                                                             max_features = self.max_features,
