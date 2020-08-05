@@ -18,7 +18,8 @@ def count_each_unique(lst):
     uv_percent_counts = [uvc / sum(uv_counts) for uvc in uv_counts]
     output_df = pd.DataFrame({'element' : unique_values,
                               'count' : uv_counts,
-                              'percent' : uv_percent_counts})
+                              'percent' : uv_percent_counts}).\
+    sort_values('count', ascending = False)
     return output_df
 
 

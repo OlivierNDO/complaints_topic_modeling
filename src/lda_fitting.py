@@ -28,6 +28,20 @@ def index_slice_list(lst, indices):
 
 
 
+def get_timestamp_save_name(prefix, suffix = '', timestamp_format = '%Y%m%d_%H%M%S', separator = '_'):
+    """
+    Return formatted timestamp surrounded by prefix and suffix
+    Args:
+        prefix (str): string to concatenate in front of timestamp
+        suffix (str): string to concatenate in front of timestamp. defaults to ''.
+        timestamp_format (str): format for datetime string. defaults to '%Y-%m-%d %H:%M:%S'
+        separator (str): string to use between prefix and timestamp
+    """
+    ts_string = datetime.datetime.fromtimestamp(time.time()).strftime(timestamp_format)
+    return f'{prefix}{separator}{ts_string}{suffix}'
+
+
+
 def print_timestamp_message(message, timestamp_format = '%Y-%m-%d %H:%M:%S'):
     """
     Print formatted timestamp followed by custom message
@@ -73,6 +87,29 @@ def tfid_kfold_split(tfid_vector, k = 10):
     if len(indices) > sum(len_to_split):
         len_to_split[-1] += len(indices) - sum(len_to_split)
     return [tfid_vector[x - y: x] for x, y in zip(itertools.accumulate(len_to_split), len_to_split)]
+
+
+
+def fit_and_score_dframe(lda_model_object, tfid_vector):
+    """
+    Score tfid vector with fitted LDA model object, returning pandas.DataFrame()
+    object with 'predicted_topic' and 'predicted_probability' fields
+    Args:
+        lda_model_object (sklearn.decomposition.online_lda.LatentDirichletAllocation): fitted lda model
+        tfid_vector (scipy.sparse.csr.csr_matrix): vectorized dataset to predict on
+    """
+    # Fit Model & Transform Test Set
+    pred_prob = lda_model_object.transform(tfid_vector)
+    
+    # Assign Labels
+    max_prob_values = np.amax(pred_prob, axis = 1)
+    max_prob_index = list(np.argmax(pred_prob, axis = 1))
+        
+    # Return Data.Frame() Object
+    score_df = pd.DataFrame({'predicted_topic' : [i + 1 for i in list(max_prob_index)],
+                             'predicted_probability' : list(max_prob_values)})
+    
+    return score_df   
 
 
 

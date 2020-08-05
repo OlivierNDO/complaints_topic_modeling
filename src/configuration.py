@@ -3,6 +3,9 @@ complaints_file = 'D:/complaint_data/complaints.csv'
 complaints_file_encoding = 'cp850'
 complaints_narrative_column = 'Consumer complaint narrative'
 
+# Model Save Location
+model_save_folder = 'D:/complaint_models/'
+
 # Text Processing Configuration
 punctuation_str = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 general_stopwords = ["again", "against", "ain", "all", "am", "an", "and", "any", "are", "aren", "aren't",
@@ -33,3 +36,4 @@ year_stopwords = [str(y) for y in range(2000,2050)]
 all_stopwords = general_stopwords + custom_stopwords + year_stopwords
 
 substrings_to_remove = ['\n'] + ['x' * n for n in range(2,25)] + [w for w in all_stopwords if len(w.split(' ')) > 1]
+

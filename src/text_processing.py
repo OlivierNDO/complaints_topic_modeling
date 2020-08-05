@@ -143,7 +143,8 @@ class TextProcessingPipeline:
         sl_rm_stopwords = [remove_stopwords(s, self.word_delimiter, self.use_lowercase, self.stopword_list) for s in sl_rm_nums]
         sl_rm_substrings = [remove_multiple_substrings(s, self.substring_removals, self.use_lowercase) for s in sl_rm_stopwords]
         sl_lem_strings = [wordnet_lemmatize_string(s, self.word_delimiter, self.pos) for s in sl_rm_substrings]
-        return sl_lem_strings
+        sl_stem_strings = [stem_string_porter(s, self.word_delimiter) for s in sl_lem_strings]
+        return sl_stem_strings
     
     def get_cleaned_test_text(self):
         sl_rm_punct = [remove_punctuation(s, self.replace_punct_with, self.punctuation) for s in self.test_string_list]
@@ -151,7 +152,8 @@ class TextProcessingPipeline:
         sl_rm_stopwords = [remove_stopwords(s, self.word_delimiter, self.use_lowercase, self.stopword_list) for s in sl_rm_nums]
         sl_rm_substrings = [remove_multiple_substrings(s, self.substring_removals, self.use_lowercase) for s in sl_rm_stopwords]
         sl_lem_strings = [wordnet_lemmatize_string(s, self.word_delimiter, self.pos) for s in sl_rm_substrings]
-        return sl_lem_strings
+        sl_stem_strings = [stem_string_porter(s, self.word_delimiter) for s in sl_lem_strings]
+        return sl_stem_strings
         
     def get_vectorized_text_and_feature_names(self):
         clean_text = self.get_cleaned_text()
